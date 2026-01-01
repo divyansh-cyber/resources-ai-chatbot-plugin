@@ -1,0 +1,150 @@
+{
+  "version": "1.0",
+  "description": "Golden dataset for Jenkins chatbot evaluation",
+  "metadata": {
+    "created": "2026-01-01",
+    "total_questions": 15,
+    "categories": {
+      "jenkins_core": 5,
+      "plugins": 5,
+      "errors": 5
+    }
+  },
+  "questions": [
+    {
+      "id": "core_001",
+      "category": "jenkins_core",
+      "difficulty": "easy",
+      "question": "What is Jenkins?",
+      "expected_answer": "Jenkins is an open-source automation server that helps automate parts of software development related to building, testing, and deploying, facilitating continuous integration and continuous delivery (CI/CD).",
+      "expected_context_keywords": ["automation", "CI/CD", "open-source", "build", "test", "deploy"],
+      "ground_truth_sources": ["jenkins.io/doc/", "jenkins core documentation"]
+    },
+    {
+      "id": "core_002",
+      "category": "jenkins_core",
+      "difficulty": "medium",
+      "question": "How do I configure a Jenkins pipeline?",
+      "expected_answer": "You can configure a Jenkins pipeline by creating a Jenkinsfile in your repository. The Jenkinsfile can use either declarative or scripted pipeline syntax. A basic declarative pipeline includes stages like checkout, build, test, and deploy.",
+      "expected_context_keywords": ["Jenkinsfile", "pipeline", "declarative", "scripted", "stages"],
+      "ground_truth_sources": ["jenkins.io/doc/book/pipeline/"]
+    },
+    {
+      "id": "core_003",
+      "category": "jenkins_core",
+      "difficulty": "medium",
+      "question": "What is the difference between declarative and scripted pipelines?",
+      "expected_answer": "Declarative pipelines provide a simpler, more opinionated syntax with a predefined structure (pipeline, agent, stages, steps). Scripted pipelines offer more flexibility using Groovy but require more programming knowledge. Declarative is recommended for most use cases.",
+      "expected_context_keywords": ["declarative", "scripted", "Groovy", "syntax", "flexibility"],
+      "ground_truth_sources": ["jenkins.io/doc/book/pipeline/syntax/"]
+    },
+    {
+      "id": "core_004",
+      "category": "jenkins_core",
+      "difficulty": "hard",
+      "question": "How do I set up distributed builds with Jenkins agents?",
+      "expected_answer": "You can set up distributed builds by configuring Jenkins agents (formerly slaves). Go to Manage Jenkins > Manage Nodes, add a new node, specify the remote root directory, labels, and connection method (SSH, JNLP, etc.). Then use the 'agent' directive in your pipeline to target specific agents.",
+      "expected_context_keywords": ["agents", "nodes", "distributed", "SSH", "JNLP", "labels"],
+      "ground_truth_sources": ["jenkins.io/doc/book/managing/nodes/"]
+    },
+    {
+      "id": "core_005",
+      "category": "jenkins_core",
+      "difficulty": "easy",
+      "question": "How do I install plugins in Jenkins?",
+      "expected_answer": "Go to Manage Jenkins > Manage Plugins. In the Available tab, search for the plugin you want, select it, and click 'Install without restart' or 'Download now and install after restart'.",
+      "expected_context_keywords": ["Manage Plugins", "install", "Available tab"],
+      "ground_truth_sources": ["jenkins.io/doc/book/managing/plugins/"]
+    },
+    {
+      "id": "plugin_001",
+      "category": "plugins",
+      "difficulty": "easy",
+      "question": "What is the Git plugin used for?",
+      "expected_answer": "The Git plugin allows Jenkins to integrate with Git repositories. It enables Jenkins to clone repositories, checkout specific branches or commits, and trigger builds based on Git events like commits or pull requests.",
+      "expected_context_keywords": ["Git", "repository", "clone", "checkout", "trigger"],
+      "ground_truth_sources": ["plugins.jenkins.io/git/"]
+    },
+    {
+      "id": "plugin_002",
+      "category": "plugins",
+      "difficulty": "medium",
+      "question": "How do I configure GitHub webhook integration?",
+      "expected_answer": "Install the GitHub plugin, then in your GitHub repository settings, add a webhook pointing to your Jenkins URL (http://your-jenkins-url/github-webhook/). In Jenkins, configure your job to use 'GitHub hook trigger for GITScm polling'.",
+      "expected_context_keywords": ["GitHub", "webhook", "trigger", "polling", "integration"],
+      "ground_truth_sources": ["plugins.jenkins.io/github/"]
+    },
+    {
+      "id": "plugin_003",
+      "category": "plugins",
+      "difficulty": "medium",
+      "question": "What does the Blue Ocean plugin do?",
+      "expected_answer": "Blue Ocean is a modern user interface for Jenkins that provides a visual pipeline editor, better pipeline visualization, and improved user experience. It makes it easier to create, visualize, and diagnose pipeline runs.",
+      "expected_context_keywords": ["Blue Ocean", "UI", "visualization", "pipeline editor", "modern"],
+      "ground_truth_sources": ["plugins.jenkins.io/blueocean/"]
+    },
+    {
+      "id": "plugin_004",
+      "category": "plugins",
+      "difficulty": "hard",
+      "question": "How do I use the Docker plugin to run builds in containers?",
+      "expected_answer": "Install the Docker plugin and configure Docker cloud in Manage Jenkins > Configure System. You can then use the 'docker' agent in your pipeline to specify a Docker image. The plugin will automatically pull the image and run your build inside a container.",
+      "expected_context_keywords": ["Docker", "container", "cloud", "image", "agent"],
+      "ground_truth_sources": ["plugins.jenkins.io/docker/"]
+    },
+    {
+      "id": "plugin_005",
+      "category": "plugins",
+      "difficulty": "medium",
+      "question": "What is the Credentials plugin?",
+      "expected_answer": "The Credentials plugin provides a centralized way to store and manage credentials (passwords, API tokens, SSH keys, certificates) in Jenkins. It allows you to securely use credentials in jobs without exposing them in logs or pipeline code.",
+      "expected_context_keywords": ["credentials", "secure", "passwords", "tokens", "SSH keys"],
+      "ground_truth_sources": ["plugins.jenkins.io/credentials/"]
+    },
+    {
+      "id": "error_001",
+      "category": "errors",
+      "difficulty": "easy",
+      "question": "What does 'java.lang.OutOfMemoryError' mean in Jenkins?",
+      "expected_answer": "This error means Jenkins has run out of heap memory. You can fix it by increasing the Java heap size using the -Xmx flag when starting Jenkins (e.g., java -Xmx2048m -jar jenkins.war).",
+      "expected_context_keywords": ["OutOfMemoryError", "heap", "Xmx", "memory", "Java"],
+      "ground_truth_sources": ["jenkins.io/doc/book/troubleshooting/"]
+    },
+    {
+      "id": "error_002",
+      "category": "errors",
+      "difficulty": "medium",
+      "question": "How do I fix 'Permission denied' errors when Jenkins tries to access files?",
+      "expected_answer": "This usually happens when the Jenkins user doesn't have proper file permissions. Check the file ownership and permissions. You may need to change ownership (chown) or permissions (chmod) of the affected files/directories to the Jenkins user.",
+      "expected_context_keywords": ["permission denied", "ownership", "chown", "chmod", "user"],
+      "ground_truth_sources": ["jenkins.io/doc/book/security/"]
+    },
+    {
+      "id": "error_003",
+      "category": "errors",
+      "difficulty": "hard",
+      "question": "What causes 'hudson.remoting.ChannelClosedException' with agents?",
+      "expected_answer": "This error indicates the communication channel between the master and agent has closed unexpectedly. Common causes include network issues, agent crashes, or timeout. Check agent logs, network connectivity, and increase timeout values if needed.",
+      "expected_context_keywords": ["ChannelClosedException", "remoting", "agent", "network", "timeout"],
+      "ground_truth_sources": ["jenkins.io/doc/book/managing/nodes/"]
+    },
+    {
+      "id": "error_004",
+      "category": "errors",
+      "difficulty": "medium",
+      "question": "How do I resolve 'Pipeline script not found' error?",
+      "expected_answer": "This error occurs when Jenkins cannot find the Jenkinsfile in the repository. Make sure the Jenkinsfile exists in the correct location (default is repository root), the branch is correct, and the file path is properly configured in the pipeline job settings.",
+      "expected_context_keywords": ["Jenkinsfile", "not found", "repository", "branch", "path"],
+      "ground_truth_sources": ["jenkins.io/doc/book/pipeline/"]
+    },
+    {
+      "id": "error_005",
+      "category": "errors",
+      "difficulty": "easy",
+      "question": "What does 'Build step failed with exception' mean?",
+      "expected_answer": "This generic error indicates that a build step encountered an exception. Check the console output for the specific exception message and stack trace to identify the root cause. The actual problem could be a plugin issue, script error, or configuration problem.",
+      "expected_context_keywords": ["exception", "build step", "console output", "stack trace"],
+      "ground_truth_sources": ["jenkins.io/doc/book/troubleshooting/"]
+    }
+  ]
+}

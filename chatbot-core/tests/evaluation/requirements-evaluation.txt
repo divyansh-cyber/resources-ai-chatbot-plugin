@@ -1,0 +1,21 @@
+# LLM Evaluation Requirements
+# Install with: pip install -r requirements-evaluation.txt
+
+# Core evaluation framework
+ragas>=0.1.0
+langchain>=0.1.0
+langchain-openai>=0.0.5
+
+# LLM providers (choose based on your setup)
+openai>=1.0.0
+
+# Dataset handling
+datasets>=2.14.0
+
+# Testing
+pytest>=7.4.0
+requests>=2.31.0
+
+# Optional: Alternative LLM providers
+# anthropic>=0.8.0  # For Claude models
+# together>=0.2.0   # For open-source models

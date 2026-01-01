@@ -1,0 +1,134 @@
+name: LLM Evaluation
+
+on:
+  pull_request:
+    types: [labeled, opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  check-trigger:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.result }}
+    steps:
+      - name: Check if evaluation should run
+        id: check
+        run: |
+          # Run if PR has label 'evaluate-llm' or comment contains '/run-evaluation'
+          if [[ "${{ contains(github.event.pull_request.labels.*.name, 'evaluate-llm') }}" == "true" ]] || \
+             [[ "${{ github.event.comment.body }}" == *"/run-evaluation"* ]]; then
+            echo "result=true" >> $GITHUB_OUTPUT
+          else
+            echo "result=false" >> $GITHUB_OUTPUT
+          fi
+
+  evaluate:
+    needs: check-trigger
+    if: needs.check-trigger.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        category: [jenkins_core, plugins, errors, full]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.12"
+
+    - name: Install dependencies
+      run: |
+        cd chatbot-core
+        python -m pip install --upgrade pip
+        # Install evaluation dependencies
+        pip install ragas langchain langchain-openai openai datasets pytest
+        # Install chatbot dependencies (minimal for API)
+        pip install fastapi uvicorn requests
+
+    - name: Start chatbot server
+      run: |
+        cd chatbot-core
+        # Start server in background
+        nohup uvicorn api.main:app --host 0.0.0.0 --port 8000 &
+        # Wait for server to be ready
+        sleep 10
+        # Check if server is running
+        curl -f http://localhost:8000/health || exit 1
+      env:
+        JENKINS_CHATBOT_URL: http://localhost:8000
+
+    - name: Run evaluation - ${{ matrix.category }}
+      run: |
+        cd chatbot-core
+        
+        if [ "${{ matrix.category }}" == "full" ]; then
+          export RUN_FULL_EVAL=1
+          pytest tests/evaluation/test_evaluation.py::TestEvaluation::test_full_evaluation -v
+        else
+          export RUN_LIVE_EVAL=1
+          export EVAL_CATEGORIES=${{ matrix.category }}
+          pytest tests/evaluation/test_evaluation.py::TestEvaluation::test_evaluate_${{ matrix.category }} -v
+        fi
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        JENKINS_CHATBOT_URL: http://localhost:8000
+
+    - name: Upload evaluation report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: evaluation-report-${{ matrix.category }}
+        path: chatbot-core/tests/evaluation/reports/
+
+    - name: Comment PR with results
+      if: matrix.category == 'full' && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Find the latest report file
+          const reportsDir = 'chatbot-core/tests/evaluation/reports/';
+          const files = fs.readdirSync(reportsDir);
+          const latestReport = files.sort().reverse()[0];
+          
+          if (latestReport) {
+            const reportPath = path.join(reportsDir, latestReport);
+            const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            
+            const scores = report.overall_scores;
+            const summary = report.summary;
+            
+            const comment = `## 🤖 LLM Evaluation Results
+            
+            ### Overall Metrics
+            - **Faithfulness**: ${scores.faithfulness.toFixed(3)} ${scores.faithfulness >= 0.85 ? '✅' : '❌'}
+            - **Answer Relevance**: ${scores.answer_relevance.toFixed(3)} ${scores.answer_relevance >= 0.85 ? '✅' : '❌'}
+            - **Context Recall**: ${scores.context_recall.toFixed(3)} ${scores.context_recall >= 0.80 ? '✅' : '❌'}
+            - **Overall Score**: ${scores.overall.toFixed(3)}
+            
+            ### Summary
+            - Total Questions: ${summary.total_questions}
+            - Status: ${summary.passed ? '✅ PASSED' : '❌ FAILED'}
+            
+            ### Category Breakdown
+            ${Object.entries(summary.categories).map(([cat, stats]) => 
+              `- **${cat}**: ${stats.count} questions (${stats.percentage.toFixed(1)}%)`
+            ).join('\n')}
+            
+            ---
+            📊 Full report available in workflow artifacts
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }
